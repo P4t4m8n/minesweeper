@@ -12,8 +12,19 @@
     <div class="lives"><span>3</span> LIVES LEFT</div>
     <div class="shows"><span>0</span> CELLS SHOWN</div>
     <div class="mark"><span>0</span> CELLS MARKED</div>
-    <div class="time">00</div>
-    
+    <div class="timer">00:00</div>
+    <button class="restart" onclick="restartBtn()">'🙂'</button>
+    <div class="hints">
+        <button onclick="getHint(this)">💡</button>
+        <button onclick="getHint(this)">💡</button>
+        <button onclick="getHint(this)">💡</button>
+    </div>
+    <div class="level-btn">
+        <button onclick="pickLevel('')">Beginner</button>
+        <button onclick="pickLevel('Meduim')">Meduim</button>
+        <button onclick="pickLevel('Expert')">Expert</button>
+    </div>
+
     <table class="mine-field">
         <tbody class="mine-field-cells">
         </tbody>
