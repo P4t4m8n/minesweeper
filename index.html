@@ -8,7 +8,12 @@
     <title>Mine Swepper</title>
 </head>
 
-<body onload="onInit()">
+<body onload="onInit()" oncontextmenu="return false">
+    <div class="lives"><span>3</span> LIVES LEFT</div>
+    <div class="shows"><span>0</span> CELLS SHOWN</div>
+    <div class="mark"><span>0</span> CELLS MARKED</div>
+    <div class="time">00</div>
+    
     <table class="mine-field">
         <tbody class="mine-field-cells">
         </tbody>
@@ -20,7 +25,7 @@
                         class="icon ion-social-twitter"></i></a><a href="#"><i class="icon ion-social-facebook"></i></a>
             </div>
             <ul class="list-inline">
-                
+
             </ul>
             <p class="copyright">Eran michaeli © 1st sprint novmber 2023</p>
         </footer>

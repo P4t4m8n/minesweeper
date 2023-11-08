@@ -1,5 +1,5 @@
 .hidden {
-   color: white;
+  display: none;
 }
 
 table {
@@ -13,4 +13,4 @@ table {
     border-radius: 7px;
     border: 1px solid rgb(0, 0, 0);
     text-align: center;
-}
+border-color: black;}
