@@ -9,26 +9,47 @@
 </head>
 
 <body onload="onInit()" oncontextmenu="return false">
-    <div class="lives"><span>3</span> LIVES LEFT</div>
-    <div class="shows"><span>0</span> CELLS SHOWN</div>
-    <div class="mark"><span>0</span> CELLS MARKED</div>
-    <div class="timer">00:00</div>
-    <button class="restart" onclick="restartBtn()">'🙂'</button>
-    <div class="hints">
-        <button onclick="getHint(this)">💡</button>
-        <button onclick="getHint(this)">💡</button>
-        <button onclick="getHint(this)">💡</button>
+    <div class="game-info">
+        <tr>
+            <td><span>3</span> LIVES LEFT</td>
+            <td><span>0</span> CELLS SHOWN</td>
+            <td><span>0</span> CELLS MARKED</td>
+        </tr>
     </div>
-    <div class="level-btn">
+    <!-- <div class="lives"><span>3</span> LIVES LEFT</div>
+    <div class="shows"><span>0</span> CELLS SHOWN</div>
+    <div class="mark"><span>0</span> CELLS MARKED</div> -->
+    <div class="timer">00:00</div>
+    <button class="restart btn" onclick="restartBtn()">'🙂'</button>
+    <div class="hints btn">
+        <button onclick="getHint(this)">💡</button>
+        <button onclick="getHint(this)">💡</button>
+        <button onclick="getHint(this)">💡</button>
+        <button onclick="getHint(this)">Mega Hint</button>
+    </div>
+    <div class="level-btn btn">
         <button onclick="pickLevel('')">Beginner</button>
         <button onclick="pickLevel('Meduim')">Meduim</button>
         <button onclick="pickLevel('Expert')">Expert</button>
+    </div>
+    <div class="safe-btn">
+        <button onclick="onSafeClick()"><span>3</span> Safe Click</button>
+    </div>
+    <div class="undo-btn">
+        <button onclick="onUnDoClick()">UNDO</button>
     </div>
 
     <table class="mine-field">
         <tbody class="mine-field-cells">
         </tbody>
     </table>
+    <table class="leader-board">
+        <tbody class="leader-board-cells">
+        </tbody>
+    </table>
+    <div class="result">
+
+    </div>
     <div class="footer-basic">
         <footer>
             <div class="social"><a href="#"><i class="icon ion-social-instagram"></i></a><a href="#"><i

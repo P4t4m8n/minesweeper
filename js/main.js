@@ -2,6 +2,7 @@
 
 const MINE = '\u{1F4A3}'
 const FLAG = '\u{26F3}'
+const HIDDEN_CELL = '🟫'
 
 const gRstBtnMods = {
     start: '🙂',
@@ -9,6 +10,12 @@ const gRstBtnMods = {
     lost: '😞',
     Win: ' \u{1F63C}'
 }
+
+const gNumClassName = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight']
+
+
+var gScoreBoard = [{ name: 'John James Rambo', score: '40:00' },
+{ name: 'Gruff Snake Plissken', score: '45:00' }, { name: 'UmpaLumpa', score: '50:00' }]
 
 var gLevel = {
     SIZE: 4,
@@ -21,6 +28,8 @@ var gGame = {
     secsPassed: 0,
     LIVES: 0,
     isHint: false,
+    safePick: 3,
+    isSafe: false
 }
 
 var gBoard
@@ -30,9 +39,13 @@ var gTime
 var gElHints
 var gShownHintIdxs
 
+var gGameInfoSpans = document.querySelectorAll('.game-info span')
+
 function onInit() {
     buildBoard()
     renderBoard(gBoard)
+    updateScoreBoard('30:00', false)
+    renderScoreBoard()
 }
 
 function pickLevel(level) {
@@ -47,19 +60,19 @@ function pickLevel(level) {
             gLevel.MINES = 32
             break
         default:
-            gLevel.SIZE = 8
-            gLevel.MINES = 14
+            gLevel.SIZE = 4
+            gLevel.MINES = 2
             break
 
     }
 
-    buildBoard(gLevel.SIZE)
-    renderBoard(gBoard)
+    restartBtn()
 }
 
 function startGame() {
     updateLife()
     gGame.isOn = true
+
     startTimer()
 
     changeRestartBtnImg('inGame')
@@ -69,13 +82,13 @@ function startGame() {
     renderBoard(gBoard)
 }
 
-function buildBoard(size = 4) {
+function buildBoard() {
 
     gBoard = []
 
-    for (var i = 0; i < size; i++) {
+    for (var i = 0; i < gLevel.SIZE; i++) {
         gBoard[i] = []
-        for (var j = 0; j < size; j++) {
+        for (var j = 0; j < gLevel.SIZE; j++) {
             var cell = {
                 minesAroundCount: 0,
                 isShown: false,
@@ -89,30 +102,27 @@ function buildBoard(size = 4) {
 
 function placeMines() {
     for (var i = 0; i < gLevel.MINES; i++) {
-        const recSafety = 145
-        var cell = getRndMineFreeCell(recSafety)
-        cell.isMine = true
+        var cell = getRndMineFreeCell()
+        gBoard[cell.i][cell.j].isMine = true
     }
 
 }
 
-function getRndMineFreeCell(recSafety) {
+function getRndMineFreeCell() {
     var idx = getRandomInt(0, gBoard.length - 1)
     var jdx = getRandomInt(0, gBoard.length - 1)
 
-    if (recSafety <= 0) return null
-
-    if (gBoard[idx][jdx].isMine &&
+    if (gBoard[idx][jdx].isMine ||
         gBoard[idx][jdx].isShown)
-        getRndMineFreeCell(recSafety - 1)
+        getRndMineFreeCell()
 
-    return gBoard[idx][jdx]
+    return { i: idx, j: jdx }
 }
 
 function setMinesNegsCount(board) {
     for (var i = 0; i < board.length; i++) {
         for (var j = 0; j < board[i].length; j++) {
-            if (board[i][j].isMine) continue
+            if (board[i][j].isMine || board[i][j].isShown) continue
             board[i][j].minesAroundCount = countNeighbors(i, j, board)
         }
     }
@@ -140,16 +150,16 @@ function renderBoard(board) {
                 }
                 else {
                     innerImg = cell.minesAroundCount
-                    className = 'number'
+                    className = gNumClassName[innerImg]
                 }
             }
             else {
-                innerImg = ''
-                className = 'emepty'
+                innerImg = HIDDEN_CELL
+                className = gNumClassName[0]
             }
 
 
-            strHTML += `\t<td data-i="${i}" data-j="${j}" class="cell ${className} 
+            strHTML += `\t<td data-i="${i}" data-j="${j}" class="cell ${className} numbers
             " onclick="onCellClicked(${i}, ${j})"
             oncontextmenu="onFlagClick(${i}, ${j})" >
             ${innerImg}</td>\n`
@@ -160,9 +170,27 @@ function renderBoard(board) {
     elCells.innerHTML = strHTML
 }
 
+function renderScoreBoard() {
+
+    var strHTML = `<tr>\n`
+
+    for (var i = 0; i < gScoreBoard.length; i++) {
+        strHTML += `<td>\n`
+        var idxStr = i.toString()
+        var tempName = localStorage.getItem(idxStr = i.toString())
+
+        strHTML += `<td class="cell ${'leader-board-cell'}">${tempName}</td>`
+
+    }
+    strHTML += `</tr>\n`
+    const elCells = document.querySelector('.leader-board-cells')
+    elCells.innerHTML = strHTML
+}
+
 function onCellClicked(rowIdx, colIdx) {
 
     if (gGame.isHint) {
+        startGame()
         closeHint(rowIdx, colIdx)
         return
     }
@@ -173,18 +201,22 @@ function onCellClicked(rowIdx, colIdx) {
     if (cell.isShown) return
     if (cell.isMarked) return
 
-    if (!gGame.isOn) {
-        startGame()
-    }
-
-
     if (cell.isMine) {
         alert('BOOM')
         updateLife()
         checkGameOver()
         return
     }
-    expandShown(gBoard, rowIdx, colIdx, true, false)
+
+    if (!gGame.isOn) {
+        startGame()
+    }
+
+    if (cell.minesAroundCount > 0) {
+        cell.isShown = true
+        gGame.shownCount++
+    }
+    else expandShown(gBoard, rowIdx, colIdx)
 
     renderBoard(gBoard)
     updateShown()
@@ -194,9 +226,14 @@ function onCellClicked(rowIdx, colIdx) {
 function onFlagClick(idx, jdx) {
 
     var cell = gBoard[idx][jdx]
-    console.log(cell)
-    console.log(idx)
-    console.log(jdx)
+
+    if (gGame.isSafe) {
+        cell.isMarked = true
+        renderBoard(gBoard)
+        setTimeout(closeSafeClick, 2000, idx, jdx)
+        return
+    }
+
     if (cell.isMarked) {
         gGame.markedCount--
         cell.isMarked = false
@@ -206,30 +243,29 @@ function onFlagClick(idx, jdx) {
         gGame.markedCount++
 
     }
-    console.log(cell)
-    console.log(gGame)
-    console.table(gBoard)
     updateMark()
     renderBoard(gBoard)
     checkGameOver()
 
 }
 
-function expandShown(board, rowIdx, colIdx, show, all) {
+function expandShown(board, rowIdx, colIdx) {
 
     for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
         if (i < 0 || i >= board.length) continue
 
         for (var j = colIdx - 1; j <= colIdx + 1; j++) {
-            var tempCell = board[i][j]
+            var cell = board[i][j]
+
             if (j < 0 || j >= board[i].length) continue
-            if (tempCell.isShown) continue
-            if (all === false) {
-                if (tempCell.isMine || tempCell.isMarked || tempCell.isShown) continue
-            }
-            board[i][j].isShown = show
-            if (show === true) gGame.shownCount++
-            else gGame.shownCount--
+            if (cell.isShown) continue
+            if (cell.isMine || cell.isMarked || cell.isShown) continue
+
+            board[i][j].isShown = true
+            gGame.shownCount++
+            if (cell.minesAroundCount === 0) expandShown(board, i, j)
+
+
 
         }
     }
@@ -253,14 +289,13 @@ function gameOver(isWin) {
     if (isWin) {
         endStr = 'Winner!!! your time: '
         changeRestartBtnImg('win')
-        storeScore(endTime)
+        updateScoreBoard(endTime, true)
         renderScoreBoard()
     }
     else {
         endStr = 'You Lost!!! you time: '
         changeRestartBtnImg('Lost')
     }
-    console.log(endTime)
     endStr += endTime
 
     alert(endStr)
@@ -279,11 +314,13 @@ function restartBtn() {
     document.querySelector('.timer').innerText = gTime
 
     updateLife()
+    restartHint()
     updateMark()
     updateShown()
     buildBoard()
     renderBoard(gBoard)
     changeRestartBtnImg()
+    resetSafe()
 }
 
 function changeRestartBtnImg(status) {
@@ -310,26 +347,19 @@ function changeRestartBtnImg(status) {
 function updateLife() {
     gGame.LIVES--
 
-    if (!gGame.isOn) gGame.LIVES = gLevel.MINES
-
-    var elLife = document.querySelector('.lives span')
-
-    elLife.textContent = gGame.LIVES
-
-
+    if (!gGame.isOn) gGame.LIVES = 3
+    gGameInfoSpans[0].textContent = gGame.LIVES
 }
 
 function updateShown() {
     if (!gGame.isOn) gGame.shownCount = 0
-    var elShown = document.querySelector('.shows span')
-    elShown.textContent = gGame.shownCount
+    gGameInfoSpans[1].textContent = gGame.shownCount
 
 }
 
 function updateMark() {
     if (!gGame.isOn) gGame.markedCount = 0
-    var elMark = document.querySelector('.mark span')
-    elMark.textContent = gGame.markedCount
+    gGameInfoSpans[2].textContent = gGame.markedCount
 
 }
 
@@ -349,14 +379,12 @@ function stopTimer() {
     clearInterval(gInterval)
 }
 
-
-
 function revealAll() {
-    const hiddens = document.querySelectorAll('.hidden')
-
-    for (var i = 0; i < hiddens.length; i++) {
-        hiddens[i].classList.remove('hidden')
+    for (var i = 0; i < gBoard.length; i++) {
+        for (var j = 0; j < gBoard[i].length; j++)
+            gBoard[i][j].isShown = true
     }
+
 }
 
 function getHint(elBtn) {
@@ -371,9 +399,7 @@ function closeHint(idx, jdx) {
     gShownHintIdxs = []
     hintCellshown(idx, jdx, true)
 
-
-    setTimeout(hintCellshown, 1, idx, jdx, false)
-
+    setTimeout(hintCellshown, 1000, idx, jdx, false)
 
     var elHint = document.querySelector('.highlight')
     elHint.style.visibility = 'hidden'
@@ -390,7 +416,6 @@ function hintCellshown(idx, jdx, show) {
             if (j < 0 || j >= gBoard[i].length) continue
             if (tempCell.isShown) {
 
-                console.log(gShownHintIdxs)
                 if (gShownHintIdxs.length > 0) {
 
                     if (gShownHintIdxs[0].i === i && gShownHintIdxs[0].j === j) {
@@ -411,6 +436,72 @@ function hintCellshown(idx, jdx, show) {
     }
     renderBoard(gBoard)
 }
+
+function restartHint() {
+    const elHintsBtns = document.querySelectorAll('.highlight')
+    for (var i = 0; i < elHintsBtns.length; i++) {
+        elHintsBtns[i].style.visibility = 'visible'
+        elHintsBtns[i].classList.remove('highlight')
+    }
+}
+
+function updateScoreBoard(endTime, isWin) {
+    // Check browser support
+    // Store
+    // debugger
+    if (isWin === true) {
+        var nameStr = prompt('Enter your name')
+        debugger
+        for (var i = gScoreBoard.length - 1; i >= 0; i--) {
+            if (parseInt(gScoreBoard[i].score) < parseInt(endTime)) break
+
+            var tempCell = gScoreBoard[i]
+            gScoreBoard[i] = { name: nameStr, score: endTime }
+            if (i < 2) gScoreBoard[i + 1] = tempCell
+        }
+    }
+
+    for (var j = 0; j < gScoreBoard.length; j++) {
+        var temp = 'name: ' + gScoreBoard[j].name + '| score: ' + gScoreBoard[j].score
+        var temp1 = j.toString()
+        localStorage.setItem(temp1, temp);
+    }
+}
+
+function onSafeClick() {
+    if (gGame.safePick === 0) return
+    gGame.safePick--
+    gGame.isSafe = true
+
+    if (!gGame.isOn) {
+        startGame()
+    }
+    var loction = getRndMineFreeCell()
+    onFlagClick(loction.i, loction.j)
+    renderSafeClick()
+}
+
+function closeSafeClick(idx, jdx) {
+    gGame.isSafe = false
+    gBoard[idx][jdx].isMarked = false
+    renderBoard(gBoard)
+}
+
+function resetSafe() {
+    debugger
+    gGame.safePick = 3
+    renderSafeClick()
+}
+
+function renderSafeClick() {
+    var elBtn = document.querySelector('.safe-btn span')
+    elBtn.textContent = gGame.safePick
+}
+
+
+
+
+
 
 
 

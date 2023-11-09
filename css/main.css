@@ -1,10 +1,14 @@
 .hidden {
-  display: none;
+    display: none;
 }
 
 table {
     border-collapse: separate;
     border-spacing: 10px;
+    align-self: center;
+    text-align: center;
+    position: relative;
+    border-spacing: 0px;
 }
 
 .cell {
@@ -13,8 +17,78 @@ table {
     border-radius: 7px;
     border: 1px solid rgb(0, 0, 0);
     text-align: center;
-border-color: black;}
+    border-color: black;
+}
 
-.highlight{
+.highlight {
     background-color: yellow;
 }
+
+.btn {
+    border: 0;
+    cursor: pointer;
+    font-weight: bold;
+    line-height: normal;
+    border-radius: 5px;
+    padding: 5px;
+    margin-left: 8px;
+  }
+
+td {
+    padding: 0;
+    width: 25px;
+    height: 25px;
+    border: 1px solid #a1a1a1;
+    text-align: center;
+    line-height: 20px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.numbers{
+    border: 20px double #c8a7a7;
+}
+
+.zero {
+    background-color: #eeeeee;
+  }
+  
+  .one {
+    background-color: #eeeeee;
+    color: #0332fe;
+  }
+  
+  .two {
+    background-color: #eeeeee;
+    color: #019f02;
+  }
+  
+  .three {
+    background-color: #eeeeee;
+    color: #ff2600;
+  }
+  
+  .four {
+    background-color: #eeeeee;
+    color: #93208f;
+  }
+  
+  .five {
+    background-color: #eeeeee;
+    color: #ff7f29;
+  }
+  
+  .six {
+    background-color: #eeeeee;
+    color: #ff3fff;
+  }
+  
+  .seven {
+    background-color: #eeeeee;
+    color: #53b8b4;
+  }
+  
+  .eight {
+    background-color: #eeeeee;
+    color: #22ee0f;
+  }
