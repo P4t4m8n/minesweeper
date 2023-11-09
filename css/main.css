@@ -92,3 +92,9 @@ td {
     background-color: #eeeeee;
     color: #22ee0f;
   }
+
+  .dark-mode {
+    background-color: black;
+    color: white;
+  }
+  

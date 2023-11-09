@@ -25,15 +25,21 @@
         <button onclick="getHint(this)">💡</button>
         <button onclick="getHint(this)">💡</button>
         <button onclick="getHint(this)">💡</button>
-        <button onclick="getHint(this)">Mega Hint</button>
+        <button id="Mega" onclick="getMegaHint(this)">Mega Hint</button>
+    </div>
+    <div class="manual btn">
+        <button onclick="onManualMines()">Manually create</button>
+        <button id="ex" onclick="exterminator(this)">exterminator</button>
     </div>
     <div class="level-btn btn">
         <button onclick="pickLevel('')">Beginner</button>
         <button onclick="pickLevel('Meduim')">Meduim</button>
         <button onclick="pickLevel('Expert')">Expert</button>
     </div>
+
     <div class="safe-btn">
         <button onclick="onSafeClick()"><span>3</span> Safe Click</button>
+        <button onclick="clickDarkMod(this)">Dark Mode</button>
     </div>
     <div class="undo-btn">
         <button onclick="onUnDoClick()">UNDO</button>
