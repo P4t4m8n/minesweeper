@@ -24,7 +24,7 @@ var gLevel = {
     MINES: 2
 }
 var gGame = {
-    isOn: false,1
+    isOn: false,
     shownCount: 0,
     markedCount: 0,
     secsPassed: 0,
@@ -51,9 +51,8 @@ function onInit() {
     renderBoard(gBoard)
     updateScoreBoard('30:00', false)
     renderScoreBoard()
+
     gManualIdx = gLevel.MINES
-
-
 }
 
 function pickLevel(level) {
@@ -525,8 +524,6 @@ function renderSafeClick() {
 
 function storeMoves(moves) {
     var newBoard = structuredClone(gBoard)
-    // for (var i = 0; i < gBoard.length; i++)
-    //     newBoard[i] = structuredClone(gBoard);
 
     var moveData = {
         board: newBoard,
@@ -548,7 +545,6 @@ function onUnDoClick() {
 
 function clickDarkMod(elBtn) {
 
-
     var elBody = document.body
     elBody.classList.toggle("dark-mode")
 
@@ -558,10 +554,7 @@ function clickDarkMod(elBtn) {
     }
     else {
         elBtn.innerText = 'Dark Mode'
-
     }
-
-
 }
 
 function getMegaHint(elBtn) {

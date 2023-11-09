@@ -16,24 +16,6 @@ function countNeighbors(rowIdx, colIdx, mat) {
     return mineCount
 }
 
-//bubble sort
-
-function sortNums1(nums) {
-    var arrSize = nums.length
-
-    for (var i = 0; i < arrSize - 1; i++) {
-        for (var j = 0; j < arrSize - i - 1; j++) {
-            if (nums[j] > nums[j + 1]) {
-                var temp = nums[j]
-                nums[j] = nums[j + 1]
-                nums[j + 1] = temp
-            }
-        }
-    }
-
-    return nums
-}
-
 //random number gen
 
 function getRandomInt(min, max) {
