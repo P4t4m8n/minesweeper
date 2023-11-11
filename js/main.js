@@ -3,6 +3,7 @@
 const MINE = '\u{1F4A3}'
 const FLAG = '\u{26F3}'
 const HIDDEN_CELL = '🟫'
+const LIFES = ['❤️', '❤️❤️', '❤️❤️❤️']
 
 const gRstBtnMods = {
     start: '🙂',
@@ -12,18 +13,18 @@ const gRstBtnMods = {
 }
 
 const gNumClassName = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight']
-var gMoves = []
-var gMegaHints = []
+var gMoves = [] //arr to store last moves for undo btn
+var gMegaHints = [] // store loction of i and j for mega hint
 
 
 var gScoreBoard = [{ name: 'John James Rambo', score: '40:00' },
-{ name: 'Gruff Snake Plissken', score: '45:00' }, { name: 'UmpaLumpa', score: '50:00' }]
+{ name: 'Gruff Snake Plissken', score: '45:00' }, { name: 'UmpaLumpa', score: '50:00' }] // to fill score board
 
-var gLevel = {
+var gLevel = { //store board size and num of mines
     SIZE: 4,
     MINES: 2
 }
-var gGame = {
+var gGame = { //store current game information
     isOn: false,
     shownCount: 0,
     markedCount: 0,
@@ -36,15 +37,15 @@ var gGame = {
     isManualMines: false,
 }
 
-var gBoard
-var gStartTime
-var gInterval
-var gTime
-var gElHints
-var gShownHintIdxs
-var gManualIdx
+var gBoard // game board
+var gStartTime // start game time
+var gInterval // interval for update time
+var gTime // hold time for the leaderboard and win condition check
+// var gElHints // NEED TO FIND USE
+var gShownHintIdxs = [] //  store shown cells the prevent hiding them after hint close
+var gManualIdx //use for manual mine placement
 
-var gGameInfoSpans = document.querySelectorAll('.game-info span')
+var gGameInfoSpans = document.querySelectorAll('.game-info span')//hold game informtion html
 
 function onInit() {
     buildBoard()
@@ -55,7 +56,7 @@ function onInit() {
     gManualIdx = gLevel.MINES
 }
 
-function pickLevel(level) {
+function pickLevel(level) { // set board size and mines, restart game
 
     switch (level) {
         case 'Meduim':
@@ -70,25 +71,26 @@ function pickLevel(level) {
             gLevel.SIZE = 4
             gLevel.MINES = 2
             break
-
     }
-
     restartBtn()
 }
 
-function startGame() {
+function startGame() { // start game update life start timer set mines render board
+
     updateLife()
+
     gGame.isOn = true
 
     startTimer()
-
     changeRestartBtnImg('inGame')
-    if (gManualIdx === gLevel.MINES) placeMines()
+    if (gManualIdx === gLevel.MINES) placeMines()//check if manual mine placment
     setMinesNegsCount(gBoard)
     renderBoard(gBoard)
+    storeMoves(gMoves)
+
 }
 
-function buildBoard() {
+function buildBoard() { // create board bad on gLevel
 
     gBoard = []
 
@@ -111,10 +113,9 @@ function placeMines() {
         var cell = getRndMineFreeCell()
         gBoard[cell.i][cell.j].isMine = true
     }
-
 }
 
-function getRndMineFreeCell() {
+function getRndMineFreeCell() { //returns an object with a free cell location for mine placement
     var idx = getRandomInt(0, gBoard.length - 1)
     var jdx = getRandomInt(0, gBoard.length - 1)
 
@@ -127,7 +128,7 @@ function getRndMineFreeCell() {
     return { i: idx, j: jdx }
 }
 
-function setMinesNegsCount(board) {
+function setMinesNegsCount(board) { //count number of mines around each board cell
     for (var i = 0; i < board.length; i++) {
         for (var j = 0; j < board[i].length; j++) {
             if (board[i][j].isMine || board[i][j].isShown) continue
@@ -136,7 +137,7 @@ function setMinesNegsCount(board) {
     }
 }
 
-function renderBoard(board) {
+function renderBoard(board) {// render board and assign class for css style
     var strHTML = ''
 
     for (var i = 0; i < board.length; i++) {
@@ -144,33 +145,34 @@ function renderBoard(board) {
         for (var j = 0; j < board[i].length; j++) {
             const cell = board[i][j]
 
-            var className
-            var innerImg
+            var className = ''
+            var innerImg = ''
 
             if (cell.isMarked) {
-                innerImg = FLAG
                 className = 'flag'
+                innerImg = FLAG
             }
+
             else if (cell.isShown) {
                 if (cell.isMine) {
-                    innerImg = 'MINE'
+                    innerImg = MINE
                     className = 'mine'
                 }
                 else {
                     innerImg = cell.minesAroundCount
-                    className = gNumClassName[innerImg]
+                    className = gNumClassName[innerImg] + ' numbers'
                 }
             }
             else {
-                innerImg = HIDDEN_CELL
-                className = gNumClassName[0]
+                innerImg = ''
+                className = 'coverd'
             }
 
-
-            strHTML += `\t<td data-i="${i}" data-j="${j}" class="cell ${className} numbers
-            " onclick="onCellClicked(${i}, ${j})"
-            oncontextmenu="onFlagClick(${i}, ${j})" >
-            ${innerImg}</td>\n`
+            strHTML += `\t<td data-i="${i}" data-j="${j}"
+                class="cell ${className} 
+                " onclick="onCellClicked(${i}, ${j})"
+                oncontextmenu="onFlagClick(${i}, ${j})" >
+                ${innerImg}</td>\n`
         }
         strHTML += `</tr>\n`
     }
@@ -179,15 +181,13 @@ function renderBoard(board) {
 }
 
 function renderScoreBoard() {
-
     var strHTML = `<tr>\n`
+    const placeStr = ['1: ', '2: ', "3: "]
 
     for (var i = 0; i < gScoreBoard.length; i++) {
-        strHTML += `<td>\n`
-        var idxStr = i.toString()
-        var tempName = localStorage.getItem(idxStr = i.toString())
-
-        strHTML += `<td class="cell ${'leader-board-cell'}">${tempName}</td>`
+        var tempName = localStorage.getItem(i.toString())
+        var tempStr = placeStr[i]
+        strHTML += `<td class="cell ${'leader-board-cell'}">${tempStr + tempName}</td>`
 
     }
     strHTML += `</tr>\n`
@@ -195,9 +195,10 @@ function renderScoreBoard() {
     elCells.innerHTML = strHTML
 }
 
-function onCellClicked(rowIdx, colIdx) {
+function onCellClicked(rowIdx, colIdx) {//on left click
 
     var cell = gBoard[rowIdx][colIdx]
+
     if (gGame.isManualMines) {
         if (cell.isMine) return
         cell.isMine = true
@@ -206,7 +207,7 @@ function onCellClicked(rowIdx, colIdx) {
     }
 
     if (gGame.isHint) {
-        startGame()
+        if (!gGame.isOn) startGame()
         closeHint(rowIdx, colIdx)
         return
     }
@@ -216,40 +217,42 @@ function onCellClicked(rowIdx, colIdx) {
         return
     }
 
-
-
     if (cell.isShown) return
     if (cell.isMarked) return
 
+    storeMoves(gMoves)
 
     if (cell.isMine) {
         alert('BOOM')
-        storeMoves(gMoves)
         updateLife()
         checkGameOver()
         return
     }
 
     if (!gGame.isOn) {
+        cell.isShown = true
+        gGame.shownCount++
         startGame()
     }
-    storeMoves(gMoves)
+
 
     if (cell.minesAroundCount > 0) {
         cell.isShown = true
         gGame.shownCount++
     }
+
+
     else expandShown(gBoard, rowIdx, colIdx)
+
     renderBoard(gBoard)
     updateShown()
     checkGameOver()
 }
 
-function onFlagClick(idx, jdx) {
-    debugger
+function onFlagClick(idx, jdx) {//right click
     var cell = gBoard[idx][jdx]
 
-    if (gGame.isSafe) {
+    if (gGame.isSafe) { //active if safe click is on, func call from btn
         cell.isMarked = true
         renderBoard(gBoard)
         setTimeout(closeSafeClick, 2000, idx, jdx)
@@ -262,51 +265,29 @@ function onFlagClick(idx, jdx) {
         gGame.markedCount--
         cell.isMarked = false
     }
+
     else {
         cell.isMarked = true
         gGame.markedCount++
 
     }
+
     updateMark()
     renderBoard(gBoard)
     checkGameOver()
-
-}
-
-function expandShown(board, rowIdx, colIdx) {
-
-    for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
-        if (i < 0 || i >= board.length) continue
-
-        for (var j = colIdx - 1; j <= colIdx + 1; j++) {
-            var cell = board[i][j]
-
-            if (j < 0 || j >= board[i].length) continue
-            if (cell.isShown) continue
-            if (cell.isMine || cell.isMarked || cell.isShown) continue
-
-            board[i][j].isShown = true
-            gGame.shownCount++
-            if (cell.minesAroundCount === 0) expandShown(board, i, j)
-
-
-
-        }
-    }
-
 }
 
 function checkGameOver() {
 
     if (gGame.markedCount === 2 && gGame.shownCount === 14)
         gameOver(true)
-    else if (gGame.LIVES === 0) gameOver(false)
+    else if (gGame.LIVES < 0) gameOver(false)
 
     return
 
 }
 
-function gameOver(isWin) {
+function gameOver(isWin) {//finish game in case of win or loss all life
     var endStr = ''
     var endTime = gTime + ''
 
@@ -325,12 +306,15 @@ function gameOver(isWin) {
     alert(endStr)
 
     stopTimer()
-    revealAll(gBoard)
+    revealAll()
+    renderBoard(gBoard)
+
     gGame.isOn = false
+    
     return
 }
 
-function restartBtn() {
+function restartBtn() {//restart from btn or inside func restart the game to start a new one
     gGame.isOn = false
 
     stopTimer()
@@ -343,6 +327,8 @@ function restartBtn() {
     megaHitsBtn.style.visibility = 'visible'
 
     gManualIdx = gLevel.MINES
+    gMegaHints = []
+
     updateLife()
     restartHint()
     updateMark()
@@ -353,7 +339,7 @@ function restartBtn() {
     resetSafe()
 }
 
-function changeRestartBtnImg(status) {
+function changeRestartBtnImg(status) {//restart btn img
     var elBtn = document.querySelector('.restart')
     var img = ''
 
@@ -377,8 +363,9 @@ function changeRestartBtnImg(status) {
 function updateLife() {
     gGame.LIVES--
 
-    if (!gGame.isOn) gGame.LIVES = 3
-    gGameInfoSpans[0].textContent = gGame.LIVES
+    if (!gGame.isOn) gGame.LIVES = 2
+
+    gGameInfoSpans[2].textContent = LIFES[gGame.LIVES]
 }
 
 function updateShown() {
@@ -389,7 +376,7 @@ function updateShown() {
 
 function updateMark() {
     if (!gGame.isOn) gGame.markedCount = 0
-    gGameInfoSpans[2].textContent = gGame.markedCount
+    gGameInfoSpans[1].textContent = gGame.markedCount
 
 }
 
@@ -417,60 +404,6 @@ function revealAll() {
 
 }
 
-function getHint(elBtn) {
-
-    gGame.isHint = true
-    gShownHintIdxs = []
-    elBtn.classList.add('highlight')
-}
-
-function closeHint(idx, jdx) {
-    if (gGame.isHint === true) gGame.isHint = false
-    hintCellshown(idx, jdx, true)
-
-    setTimeout(hintCellshown, 1000, idx, jdx, false)
-
-    var elHint = document.querySelector('.highlight')
-    elHint.style.visibility = 'hidden'
-}
-
-function hintCellshown(idx, jdx, show) {
-
-    for (var i = idx - 1; i <= idx + 1; i++) {
-        if (i < 0 || i >= gBoard.length) continue
-
-        for (var j = jdx - 1; j <= jdx + 1; j++) {
-            var tempCell = gBoard[i][j]
-            if (j < 0 || j >= gBoard[i].length) continue
-            if (tempCell.isShown) {
-                if (gShownHintIdxs.length > 0) {
-                    if (gShownHintIdxs[0].i === i && gShownHintIdxs[0].j === j) {
-                        gShownHintIdxs.splice(0, 1)
-                        continue
-                    }
-                }
-                var cell = {
-                    i,
-                    j
-                }
-
-                gShownHintIdxs.push(cell)
-            }
-            gBoard[i][j].isShown = show
-        }
-    }
-    renderBoard(gBoard)
-}
-
-function restartHint() {
-    const elHintsBtns = document.querySelectorAll('.highlight')
-    for (var i = 0; i < elHintsBtns.length; i++) {
-        elHintsBtns[i].style.visibility = 'visible'
-        elHintsBtns[i].classList.remove('highlight')
-    }
-    gMoves = []
-}
-
 function updateScoreBoard(endTime, isWin) {
 
     if (isWin === true) {
@@ -486,7 +419,7 @@ function updateScoreBoard(endTime, isWin) {
     }
 
     for (var j = 0; j < gScoreBoard.length; j++) {
-        var temp = 'name: ' + gScoreBoard[j].name + '| score: ' + gScoreBoard[j].score
+        var temp = gScoreBoard[j].name + gScoreBoard[j].score
         var temp1 = j.toString()
         localStorage.setItem(temp1, temp);
     }
@@ -524,6 +457,9 @@ function renderSafeClick() {
 
 function storeMoves(moves) {
     var newBoard = structuredClone(gBoard)
+    if (moves < 1) {
+
+    }
 
     var moveData = {
         board: newBoard,
@@ -557,27 +493,28 @@ function clickDarkMod(elBtn) {
     }
 }
 
-function getMegaHint(elBtn) {
+function getHint(elBtn) {
 
-    gGame.isMegaHint = true
-    if (!gGame.isOn) startGame()
+    gGame.isHint = true
     gShownHintIdxs = []
-    elBtn.style.visibility = 'hidden'
-
+    elBtn.classList.add('highlight')
 }
 
-function closeMegaHint(rowIdx, colIdx) {
-    gMegaHints.push({ i: rowIdx, j: colIdx })
-    console.log(gMegaHints)
-    if (gMegaHints.length < 2) return
+function closeHint(idx, jdx) {
+    if (gGame.isHint === true) gGame.isHint = false
+    hintCellshown(idx, jdx, true)
 
-    showMegaHint(true)
-    setTimeout(showMegaHint, 1000, false)
+    setTimeout(hintCellshown, 1000, idx, jdx, false)
+
+    var elHint = document.querySelector('.highlight')
+    elHint.style.visibility = 'hidden'
 }
 
-function showMegaHint(show) {
-    for (var i = gMegaHints[0].i; i <= gMegaHints[1].i; i++) {
-        for (var j = gMegaHints[0].j; j <= gMegaHints[1].j; j++) {
+function hintCellshown(idxS, jdxS, show, idxE = idxS + 1, jdxE = jdxS + 1) {
+    for (var i = (gGame.isMegaHint) ? idxS : idxS - 1; i <= idxE; i++) {
+        if (i < 0 || i >= gBoard.length) continue
+        for (var j = (gGame.isMegaHint) ? jdxS : jdxS - 1; j <= jdxE; j++) {
+            if (j < 0 || j >= gBoard[i].length) continue
             var tempCell = gBoard[i][j]
 
             if (tempCell.isShown) {
@@ -591,7 +528,6 @@ function showMegaHint(show) {
                     i,
                     j
                 }
-
                 gShownHintIdxs.push(cell)
             }
             gBoard[i][j].isShown = show
@@ -600,13 +536,70 @@ function showMegaHint(show) {
     renderBoard(gBoard)
 }
 
+function expandShown(board, rowIdx, colIdx) {
+
+    for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
+        if (i < 0 || i >= board.length) continue
+        for (var j = colIdx - 1; j <= colIdx + 1; j++) {
+            if (j < 0 || j >= board[i].length) continue
+            var cell = board[i][j]
+
+            if (cell.isShown) continue
+            if (cell.isMine || cell.isMarked || cell.isShown) continue
+
+            board[i][j].isShown = true
+            gGame.shownCount++
+            if (cell.minesAroundCount === 0) expandShown(board, i, j)
+
+
+
+        }
+    }
+
+}
+
+function restartHint() {
+    const elHintsBtns = document.querySelectorAll('.highlight')
+    for (var i = 0; i < elHintsBtns.length; i++) {
+        elHintsBtns[i].style.visibility = 'visible'
+        elHintsBtns[i].classList.remove('highlight')
+    }
+    gMoves = []
+}
+function getMegaHint(elBtn) {
+    gGame.isMegaHint = true
+    if (!gGame.isOn) startGame()
+    elBtn.style.visibility = 'hidden'
+
+}
+
+function closeMegaHint(rowIdx, colIdx) {
+
+    gMegaHints.push({ i: rowIdx, j: colIdx })
+    if (gMegaHints.length < 2) return
+
+    var startIdx = gMegaHints[0].i
+    var startJdx = gMegaHints[0].j
+    var endIdx = gMegaHints[1].i
+    var endJdx = gMegaHints[1].j
+
+    hintCellshown(startIdx, startJdx, true, endIdx, endJdx)
+
+    setTimeout(hintCellshown, 1000, startIdx, startJdx, false, endIdx, endJdx)
+    setTimeout(function () { gGame.isMegaHint = false }, 2000)
+
+}
+
+
 function onManualMines() {
     if (gGame.isOn) return
+
     if (gManualIdx === 0) {
         gGame.isManualMines = false
         startGame()
         return
     }
+
     gGame.isManualMines = true
     gManualIdx--
 }
@@ -624,8 +617,6 @@ function exterminator(elBtn) {
             }
     }
 
-    console.log(mines)
-    debugger
     var top = 3
     if (gLevel.MINES === 2) top = 2
     for (var n = 0; n < top; n++) {

@@ -5,20 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/main.css">
+    <!-- <link rel="stylesheet" href="css/test.css"> -->
     <title>Mine Swepper</title>
 </head>
 
 <body onload="onInit()" oncontextmenu="return false">
-    <div class="game-info">
+    <h1>MINE SWEPPER</h1>
+    <table class="game-info">
         <tr>
-            <td><span>3</span> LIVES LEFT</td>
             <td><span>0</span> CELLS SHOWN</td>
             <td><span>0</span> CELLS MARKED</td>
         </tr>
-    </div>
-    <!-- <div class="lives"><span>3</span> LIVES LEFT</div>
-    <div class="shows"><span>0</span> CELLS SHOWN</div>
-    <div class="mark"><span>0</span> CELLS MARKED</div> -->
+        <tr>
+            <td colspan="2"><span>❤️❤️❤️</span></td>
+        </tr>
+    </table>
+
     <div class="timer">00:00</div>
     <button class="restart btn" onclick="restartBtn()">'🙂'</button>
     <div class="hints btn">
@@ -26,6 +28,7 @@
         <button onclick="getHint(this)">💡</button>
         <button onclick="getHint(this)">💡</button>
         <button id="Mega" onclick="getMegaHint(this)">Mega Hint</button>
+
     </div>
     <div class="manual btn">
         <button onclick="onManualMines()">Manually create</button>
@@ -37,11 +40,11 @@
         <button onclick="pickLevel('Expert')">Expert</button>
     </div>
 
-    <div class="safe-btn">
+    <div class="safe-btn btn">
         <button onclick="onSafeClick()"><span>3</span> Safe Click</button>
         <button onclick="clickDarkMod(this)">Dark Mode</button>
     </div>
-    <div class="undo-btn">
+    <div class="undo-btn btn">
         <button onclick="onUnDoClick()">UNDO</button>
     </div>
 
@@ -49,22 +52,14 @@
         <tbody class="mine-field-cells">
         </tbody>
     </table>
+
     <table class="leader-board">
         <tbody class="leader-board-cells">
         </tbody>
     </table>
-    <div class="result">
 
-    </div>
     <div class="footer-basic">
         <footer>
-            <div class="social"><a href="#"><i class="icon ion-social-instagram"></i></a><a href="#"><i
-                        class="icon ion-social-snapchat"></i></a><a href="#"><i
-                        class="icon ion-social-twitter"></i></a><a href="#"><i class="icon ion-social-facebook"></i></a>
-            </div>
-            <ul class="list-inline">
-
-            </ul>
             <p class="copyright">Eran michaeli © 1st sprint novmber 2023</p>
         </footer>
     </div>

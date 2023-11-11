@@ -1,70 +1,45 @@
-body {
+BODY {
+  background: black;
+  color: #DDDDDD;
   font-family: courier new;
   text-align: center;
 }
 
-.hidden {
-  display: none;
-}
-
-.coverd {
-  color: gray;
-  background-color: gray;
-}
-
-
-.mine-field {
-  margin: auto;
-}
-
-.leader-board {
-  margin-left: auto;
-  margin-right: auto;
-  align-self: center;
+h1 {
   text-align: center;
-  position: relative;
-}
-
-.game-info {
-  margin-left: auto;
-  margin-right: auto;
-  align-self: center;
-  text-align: center;
-  position: relative;
+  font-size: 14pt;
+  font-weight: normal;
 }
 
 .mine-field {
-  border: 20px black;
-  border-color: black;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.cell {
-  width: 25px;
-  height: 25px;
-  border-radius: 7px;
-  border: 1px solid rgb(0, 0, 0);
+.mine-field-cells {
+  border: 1px solid white;
+  background: #999999;
+  width: 50px;
+  height: 16px;
   text-align: center;
-  border-color: black;
+  box-sizing: content-box;
 }
 
-.highlight {
-  background-color: yellow;
+.result {
+  width: 50px;
+  height: 16px;
+  text-align: center;
+  box-sizing: content-box;
 }
 
-.btn {
-  border: 0;
-  cursor: pointer;
-  font-weight: bold;
-  line-height: normal;
-  border-radius: 5px;
-  padding: 5px;
-  margin-left: 8px;
-}
 
+
+BUTTON {
+  margin: 12px;
+}
 
 .numbers {
-  font-family: monospace;
-  font-weight: bolder;
+  border: 20px double #c8a7a7;
 }
 
 .zero {
